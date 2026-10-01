@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 type Phase = {
     type: "increase" | "decrease";
@@ -10,6 +11,7 @@ type Phase = {
 
 export default function NewProjectPage() {
     const [name, setName] = useState("");
+    const router = useRouter();
 
     const [phases, setPhases] = useState<Phase[]>([
         {
@@ -84,9 +86,7 @@ export default function NewProjectPage() {
 
             const project = await response.json();
 
-            console.log("Created project:", project);
-
-            alert("Project created!");
+            router.push(`/projects/${project._id}`);
         } catch (error) {
             console.error(error);
             setError("Something went wrong creating the project.");
