@@ -21,6 +21,14 @@ export async function GET(request: Request, context: RouteContext) {
             );
         }
 
+        // Older projects were created at row 0. Move them to row 1 and count
+        // that starting row toward the first configured interval.
+        if (project.currentRow === 0) {
+            project.currentRow = 1;
+            project.rowsSinceLastChange = project.phases.length > 0 ? 1 : 0;
+            await project.save();
+        }
+
         return NextResponse.json(project);
     } catch (error) {
         console.error(error);
