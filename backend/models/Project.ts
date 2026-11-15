@@ -48,17 +48,13 @@ const ProjectSchema = new Schema<IProject>(
 
         currentRow: {
             type: Number,
-            default: 0,
-            min: 0,
+            default: 1,
+            min: 1,
         },
 
         phases: {
             type: [PhaseSchema],
             required: true,
-            validate: {
-                validator: (phases: IPhase[]) => phases.length > 0,
-                message: "A project must have at least one phase.",
-            },
         },
 
         currentPhaseIndex: {

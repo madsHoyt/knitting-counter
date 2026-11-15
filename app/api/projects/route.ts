@@ -28,11 +28,12 @@ export async function POST(request: Request) {
         const body = await request.json();
 
         const project = await Project.create({
-            name: body.name,
-            phases: body.phases,
-            currentRow: 0,
+            name: body.name?.trim() || "Untitled project",
+            phases: body.phases ?? [],
+            currentRow: 1,
             currentPhaseIndex: 0,
             changesCompleted: 0,
+            rowsSinceLastChange: body.phases?.length ? 1 : 0,
         });
 
         return NextResponse.json(project, { status: 201 });

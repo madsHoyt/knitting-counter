@@ -62,8 +62,6 @@ export default function ProjectPage() {
         setError("");
 
         try {
-            const currentPhase = project.phases[project.currentPhaseIndex];
-
             const newRow = project.currentRow + 1;
             let newRowsSinceLastChange = project.rowsSinceLastChange + 1;
 
@@ -71,7 +69,8 @@ export default function ProjectPage() {
             let newPhaseIndex = project.currentPhaseIndex;
 
             // Check if it's time for an increase/decrease
-            if (newRowsSinceLastChange >= currentPhase.rowsPerChange) {
+            const currentPhase = project.phases[project.currentPhaseIndex];
+            if (currentPhase && newRowsSinceLastChange >= currentPhase.rowsPerChange) {
                 newChangesCompleted += 1;
                 newRowsSinceLastChange = 0;
 
@@ -141,9 +140,9 @@ export default function ProjectPage() {
     }
 
     const currentPhase = project.phases[project.currentPhaseIndex];
-
-    const rowsUntilChange =
-        currentPhase.rowsPerChange - project.rowsSinceLastChange;
+    const rowsUntilChange = currentPhase
+        ? currentPhase.rowsPerChange - project.rowsSinceLastChange
+        : null;
 
     return (
         <main className="min-h-screen bg-pink-50 px-5 py-10">
@@ -160,7 +159,7 @@ export default function ProjectPage() {
                 </div>
 
                 {/* Current Phase */}
-                <section className="mb-5 rounded-3xl bg-white p-6 text-center shadow-sm">
+                {currentPhase && <section className="mb-5 rounded-3xl bg-white p-6 text-center shadow-sm">
                     <p className="text-sm font-semibold uppercase tracking-wide text-gray-500">
                         Current Phase
                     </p>
@@ -179,7 +178,7 @@ export default function ProjectPage() {
                         {project.changesCompleted} /{" "}
                         {currentPhase.targetChanges}
                     </p>
-                </section>
+                </section>}
 
                 {/* Current Row */}
                 <section className="mb-5 rounded-3xl bg-white p-8 text-center shadow-sm">
@@ -191,16 +190,17 @@ export default function ProjectPage() {
                         {project.currentRow}
                     </p>
 
-                    <p className="mt-3 text-3xl text-gray-500">
-                        {project.rowsSinceLastChange} /{" "}
-                        {currentPhase.rowsPerChange} rows
-                    </p>
+                    {currentPhase && <>
+                        <p className="mt-3 text-3xl text-gray-500">
+                            {project.rowsSinceLastChange} / {currentPhase.rowsPerChange} rows
+                        </p>
 
-                    <p className="mt-1 text-sm font-medium text-pink-500">
-                        {rowsUntilChange === 1
-                            ? `1 row until ${currentPhase.type}`
-                            : `${rowsUntilChange} rows until ${currentPhase.type}`}
-                    </p>
+                        <p className="mt-1 text-sm font-medium text-pink-500">
+                            {rowsUntilChange === 1
+                                ? `1 row until ${currentPhase.type}`
+                                : `${rowsUntilChange} rows until ${currentPhase.type}`}
+                        </p>
+                    </>}
                 </section>
 
                 {/* Increment Button */}

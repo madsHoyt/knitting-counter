@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 type Phase = {
     type: "increase" | "decrease";
@@ -11,6 +12,7 @@ type Phase = {
 
 export default function NewProjectPage() {
     const [name, setName] = useState("");
+    const [configurePattern, setConfigurePattern] = useState(false);
     const router = useRouter();
 
     const [phases, setPhases] = useState<Phase[]>([
@@ -61,11 +63,6 @@ export default function NewProjectPage() {
     async function createProject() {
         setError("");
 
-        if (!name.trim()) {
-            setError("Please enter a project name.");
-            return;
-        }
-
         setLoading(true);
 
         try {
@@ -76,7 +73,7 @@ export default function NewProjectPage() {
                 },
                 body: JSON.stringify({
                     name: name.trim(),
-                    phases,
+                    phases: configurePattern ? phases : undefined,
                 }),
             });
 
@@ -109,8 +106,7 @@ export default function NewProjectPage() {
                     </h1>
 
                     <p className="mt-2 text-gray-600">
-                        Set up your knitting pattern and let the counter keep
-                        track of your rows and changes.
+                        Start a simple row counter, or add increase and decrease reminders.
                     </p>
                 </div>
 
@@ -120,7 +116,7 @@ export default function NewProjectPage() {
                         htmlFor="project-name"
                         className="mb-2 block text-lg font-semibold text-gray-900"
                     >
-                        Project Name
+                        Project Name <span className="font-normal text-gray-400">(optional)</span>
                     </label>
 
                     <input
@@ -133,8 +129,16 @@ export default function NewProjectPage() {
                     />
                 </section>
 
+                <button
+                    type="button"
+                    onClick={() => setConfigurePattern((enabled) => !enabled)}
+                    className="mb-6 w-full rounded-2xl border border-pink-200 bg-white px-4 py-4 text-left font-semibold text-pink-600 shadow-sm transition hover:bg-pink-50"
+                >
+                    {configurePattern ? "− Remove pattern reminders" : "+ Add increase or decrease reminders"}
+                </button>
+
                 {/* Pattern Phases */}
-                <section className="rounded-3xl bg-white p-6 shadow-sm">
+                {configurePattern && <section className="rounded-3xl bg-white p-6 shadow-sm">
                     <div className="mb-6">
                         <h2 className="text-2xl font-bold text-gray-900">
                             Pattern Phases
@@ -249,7 +253,7 @@ export default function NewProjectPage() {
                     >
                         + Add Another Phase
                     </button>
-                </section>
+                </section>}
 
                 {/* Error */}
                 {error && (
@@ -265,8 +269,9 @@ export default function NewProjectPage() {
                     disabled={loading}
                     className="mt-6 w-full rounded-2xl bg-pink-500 px-6 py-4 text-lg font-bold text-white shadow-sm transition hover:bg-pink-600 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                    {loading ? "Creating..." : "Create Project"}
+                    {loading ? "Creating..." : "Create Counter"}
                 </button>
+                <Link href="/projects" className="mt-4 block text-center font-medium text-gray-500 hover:text-gray-700">Cancel</Link>
             </div>
         </main>
     );

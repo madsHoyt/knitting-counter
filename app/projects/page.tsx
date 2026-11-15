@@ -25,6 +25,33 @@ export default function ProjectsPage() {
     const [projects, setProjects] = useState<Project[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const [deletingId, setDeletingId] = useState<string | null>(null);
+
+    async function deleteProject(project: Project) {
+        if (!window.confirm(`Delete “${project.name}”? This cannot be undone.`)) {
+            return;
+        }
+
+        setDeletingId(project._id);
+        setError("");
+
+        try {
+            const response = await fetch(`/api/projects/${project._id}`, {
+                method: "DELETE",
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to delete project");
+            }
+
+            setProjects((current) => current.filter((item) => item._id !== project._id));
+        } catch (error) {
+            console.error(error);
+            setError("Could not delete this project. Please try again.");
+        } finally {
+            setDeletingId(null);
+        }
+    }
 
     useEffect(() => {
         async function loadProjects() {
@@ -114,11 +141,11 @@ export default function ProjectsPage() {
                             project.phases[project.currentPhaseIndex];
 
                         return (
-                            <Link
+                            <div
                                 key={project._id}
-                                href={`/projects/${project._id}`}
-                                className="block rounded-3xl bg-white p-6 shadow-sm transition hover:shadow-md active:scale-[0.99]"
+                                className="rounded-3xl bg-white p-6 shadow-sm transition hover:shadow-md"
                             >
+                                <Link href={`/projects/${project._id}`} className="block">
                                 <div className="flex items-start justify-between gap-4">
                                     <div>
                                         <h2 className="text-2xl font-bold text-gray-900">
@@ -131,7 +158,7 @@ export default function ProjectsPage() {
                                     </div>
 
                                     <span className="rounded-xl bg-pink-50 px-3 py-2 text-sm font-semibold text-pink-500">
-                                        {currentPhase.type === "increase"
+                                        {!currentPhase ? "Counter" : currentPhase.type === "increase"
                                             ? "Increase"
                                             : "Decrease"}
                                     </span>
@@ -144,8 +171,7 @@ export default function ProjectsPage() {
                                         </p>
 
                                         <p className="font-semibold text-gray-800">
-                                            {project.changesCompleted} /{" "}
-                                            {currentPhase.targetChanges}
+                                            {currentPhase ? `${project.changesCompleted} / ${currentPhase.targetChanges}` : "Row counter"}
                                         </p>
                                     </div>
 
@@ -155,13 +181,24 @@ export default function ProjectsPage() {
                                         </p>
 
                                         <p className="font-semibold text-gray-800">
-                                            {currentPhase.rowsPerChange -
-                                                project.rowsSinceLastChange}{" "}
-                                            rows
+                                            {currentPhase
+                                                ? `${Math.max(0, currentPhase.rowsPerChange - project.rowsSinceLastChange)} rows`
+                                                : "No reminders"}
                                         </p>
                                     </div>
                                 </div>
-                            </Link>
+                                </Link>
+                                <div className="mt-4 flex justify-end border-t border-gray-100 pt-3">
+                                    <button
+                                        type="button"
+                                        onClick={() => deleteProject(project)}
+                                        disabled={deletingId === project._id}
+                                        className="rounded-xl px-3 py-2 text-sm font-semibold text-red-500 transition hover:bg-red-50 disabled:opacity-60"
+                                    >
+                                        {deletingId === project._id ? "Deleting…" : "Delete"}
+                                    </button>
+                                </div>
+                            </div>
                         );
                     })}
                 </div>

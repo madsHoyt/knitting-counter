@@ -70,3 +70,28 @@ export async function PATCH(request: Request, context: RouteContext) {
         );
     }
 }
+
+export async function DELETE(request: Request, context: RouteContext) {
+    try {
+        await connectDB();
+
+        const { id } = await context.params;
+        const project = await Project.findByIdAndDelete(id);
+
+        if (!project) {
+            return NextResponse.json(
+                { error: "Project not found" },
+                { status: 404 },
+            );
+        }
+
+        return NextResponse.json({ success: true });
+    } catch (error) {
+        console.error(error);
+
+        return NextResponse.json(
+            { error: "Failed to delete project" },
+            { status: 500 },
+        );
+    }
+}
